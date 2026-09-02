@@ -1,0 +1,19 @@
+# CLion
+.idea/
+
+# CMake generated files
+cmake-build-*/
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Windows system files
+Thumbs.db
+Desktop.ini
