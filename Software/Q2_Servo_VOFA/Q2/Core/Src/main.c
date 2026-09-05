@@ -22,7 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
-#include <stdio.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +52,7 @@ uint8_t angle_index = 0;
 uint16_t current_angle = 90;
 uint32_t current_pulse = 1500;
 uint32_t last_report_tick = 0;
-char tx_buffer[64];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,6 +62,8 @@ static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void Servo_SetAngle(uint16_t angle);
+static void VOFA_SendJustFloat(void);           //JustFloat 函数声明
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -81,6 +83,36 @@ static void Servo_SetAngle(uint16_t angle)
 
   current_angle = angle;
   current_pulse = pulse;
+}
+static void VOFA_SendJustFloat(void)
+{
+  float data[2];
+
+  uint8_t tail[4] =
+  {
+    0x00, 0x00, 0x80, 0x7F
+  };
+
+  //第1路数据：舵机角度
+  data[0] = (float)current_angle;
+
+  //第2路数据：PWM占空比
+  data[1] = ((float)current_pulse / 20000.0f) * 100.0f;
+
+  HAL_UART_Transmit(
+      &huart1,
+      (uint8_t *)data,
+      sizeof(data),
+      100
+  );
+
+  //JustFloat固定帧尾
+  HAL_UART_Transmit(
+      &huart1,
+      tail,
+      sizeof(tail),
+      100
+  );
 }
 /* USER CODE END 0 */
 
@@ -122,12 +154,12 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    if (HAL_UART_Receive(&huart1, &rx_byte, 1, 100) == HAL_OK)
+    //接收目标角度
+    if (HAL_UART_Receive(&huart1, &rx_byte, 1, 10) == HAL_OK)
     {
       if (rx_byte >= '0' && rx_byte <= '9')
       {
@@ -136,7 +168,8 @@ int main(void)
           angle_buffer[angle_index++] = rx_byte;
         }
       }
-      else if ((rx_byte == '\r' || rx_byte == '\n') && angle_index > 0)
+      else if ((rx_byte == '\r' || rx_byte == '\n') &&
+               angle_index > 0)
       {
         angle_buffer[angle_index] = '\0';
 
@@ -154,31 +187,15 @@ int main(void)
         angle_index = 0;
       }
     }
-    if (HAL_GetTick() - last_report_tick >= 200)
+
+    //每100ms发送一次JustFloat
+    if (HAL_GetTick() - last_report_tick >= 100)
     {
       last_report_tick = HAL_GetTick();
 
-      uint32_t duty_x100 =
-          (current_pulse * 10000UL) / 20000UL;
-
-      int len = snprintf(
-          tx_buffer,
-          sizeof(tx_buffer),
-          "ANGLE:%u,PWM:%lu.%02lu%%\r\n",
-          current_angle,
-          (unsigned long)(duty_x100 / 100),
-          (unsigned long)(duty_x100 % 100)
-      );
-
-      HAL_UART_Transmit(
-          &huart1,
-          (uint8_t *)tx_buffer,
-          len,
-          100
-      );
+      VOFA_SendJustFloat();
     }
   }
-
   /* USER CODE END 3 */
 }
 
