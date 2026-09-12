@@ -1,34 +1,18 @@
 # G308 电控组 2026 夏季考核
 
-## 项目说明
+本仓库用于存放本次电控组考核的软件、硬件工程以及相关说明和演示材料。
 
-本仓库用于记录 G308 电控组 2026 夏季考核的软件与硬件部分的完整开发过程。
+## 软件部分
 
-## Software
+- Q1：STM32 + CLion 开发环境配置
+- Q2：VOFA+ 串口控制舵机
+- Q3：CAN 主从通信
+- Q4：编码电机 PID 定速、定位控制
+- Q5：二自由度舵机云台
 
-- Q1 Environment：现代 STM32 开发环境配置
-- Q2 Servo VOFA：VOFA+ 串口调试舵机
-- Q3 CAN：CAN 通信
-- Q4 Motor PID：编码器电机、PID、FreeRTOS
-- Q5 Gimbal：二自由度舵机云台
+## 硬件部分
 
-## Hardware
+- Q1：STM32F103C8T6 最小系统板
+- Q2：24V 转 5V Buck 降压模块
 
-- Q1 Minimum System：STM32F103C8T6 最小系统板
-- Q2 Buck 24V-5V：24V 转 5V 降压模块
-
-## Development Environment
-
-暂时列出：
-
-- CLion
-- STM32CubeMX
-- STM32 HAL
-- Arm GNU Toolchain
-- Git
-
-后续具体版本暂时不要编造，等我完成环境配置以后再补。
-
-## Repository Status
-
-当前仓库处于开发阶段，最终提交考核前会设置为 Public。
+主要使用 STM32F103C8T6、STM32CubeMX、CLion、HAL 库和 FreeRTOS 完成开发。
